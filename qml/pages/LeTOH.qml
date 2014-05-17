@@ -3,6 +3,7 @@
 
 */
 
+import QtMultimedia 5.0
 import QtQuick 2.0
 import Sailfish.Silica 1.0
 import LeTOH.LetohClass 1.0
@@ -14,6 +15,75 @@ Page
 
     property int ledSize: 40
     property color tmp : "black"
+
+    property real vuMax : 0.0
+
+    property var rainbow : [ "#ff0080", "#ff0000", "#ff8000", "#ffff00", "#00ff00",
+                             "#00ff80", "#00ffff", "#0000ff", "#8000ff", "#ff00ff",
+                             "#000000", "#ffffff" ] // also black and white
+
+    function updateAllColors()
+    {
+        // Updates all colors at once to C++ side
+        letohclass.setLedColors( {
+            "topleft" : topleft.ledColor,
+            "upperleft" : upperleft.ledColor,
+            "middleleft" : middleleft.ledColor,
+            "lowerleft" : lowerleft.ledColor,
+            "bottomleft" : bottomleft.ledColor,
+            "bottomright" : bottomright.ledColor,
+            "lowerright" : lowerright.ledColor,
+            "middleright" : middleright.ledColor,
+            "upperright" : upperright.ledColor,
+            "topright" : topright.ledColor } )
+    }
+
+    QMultimediaAudioRecorder
+    {
+        id: recorder
+        onVuMeterValueUpdate:
+        {
+            if (value > vuMax)
+            {
+                vuMax = value
+                vuPeakHold.restart()
+                vuValue.maximumValue = vuMax
+            }
+            vuValue.value = value
+
+            var vuStep = vuMax/6
+
+            topleft.ledColor = value > (5*vuStep) ? rainbow[1] : "black"
+            topright.ledColor = topleft.ledColor
+            upperleft.ledColor = value > (4*vuStep) ? rainbow[2] : "black"
+            upperright.ledColor = upperleft.ledColor
+            middleleft.ledColor = value > (3*vuStep) ? rainbow[3] : "black"
+            middleright.ledColor = middleleft.ledColor
+            lowerleft.ledColor = value > (2*vuStep) ? rainbow[4] : "black"
+            lowerright.ledColor = lowerleft.ledColor
+            bottomleft.ledColor = value > (1*vuStep) ? rainbow[5] : "black"
+            bottomright.ledColor = bottomleft.ledColor
+        }
+    }
+
+    Timer
+    {
+        id: vuPeakHold
+        interval: 500
+        repeat: true
+        running: audioMode.checked
+        onTriggered:
+        {
+            vuMax = 0.1
+            vuValue.maximumValue = vuMax
+        }
+    }
+
+    QMultimediaVuMeterBackend
+    {
+        id: vuMeterBackend
+    }
+
 
     SilicaFlickable
     {
@@ -29,14 +99,14 @@ Page
             }
         }
 
-        contentHeight: page.height //column.height
+        contentHeight: page.height
 
         Column
         {
             anchors.centerIn: parent
             height: parent.height-(6*ledSize)
             width: parent.width-(2*ledSize)
-            spacing: Theme.paddingLarge
+            spacing: Theme.paddingSmall
 
             Button
             {
@@ -54,6 +124,8 @@ Page
                     middleright.ledColor = letohclass.randomColor()
                     upperright.ledColor =  letohclass.randomColor()
                     topright.ledColor =    letohclass.randomColor()
+
+                    updateAllColors()
                 }
             }
 
@@ -63,17 +135,64 @@ Page
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked:
                 {
-                    topleft.ledColor =     "#ff0080"
-                    upperleft.ledColor =   "#ff0000"
-                    middleleft.ledColor =  "#ff8000"
-                    lowerleft.ledColor =   "#ffff00"
-                    bottomleft.ledColor =  "#00ff00"
-                    bottomright.ledColor = "#00ff80"
-                    lowerright.ledColor =  "#00ffff"
-                    middleright.ledColor = "#0000ff"
-                    upperright.ledColor =  "#8000ff"
-                    topright.ledColor =    "#ff00ff"
+                    topleft.ledColor = rainbow[0]
+                    upperleft.ledColor = rainbow[1]
+                    middleleft.ledColor = rainbow[2]
+                    lowerleft.ledColor = rainbow[3]
+                    bottomleft.ledColor = rainbow[4]
+                    bottomright.ledColor = rainbow[5]
+                    lowerright.ledColor = rainbow[6]
+                    middleright.ledColor = rainbow[7]
+                    upperright.ledColor = rainbow[8]
+                    topright.ledColor = rainbow[9]
+
+                    updateAllColors()
                 }
+            }
+
+            TextSwitch
+            {
+                id: audioMode
+                text: "Audio mode"
+                anchors.horizontalCenter: parent.horizontalCenter
+                description: "Rotate colors clockvise"
+                onCheckedChanged:
+                {
+                    rotateColors.checked = false
+
+                    if (checked)
+                    {
+                        rotateColors.checked = false
+                        topleft.ledColor = "black"
+                        upperleft.ledColor = "black"
+                        middleleft.ledColor = "black"
+                        lowerleft.ledColor = "black"
+                        bottomleft.ledColor = "black"
+                        bottomright.ledColor = "black"
+                        lowerright.ledColor = "black"
+                        middleright.ledColor = "black"
+                        upperright.ledColor = "black"
+                        topright.ledColor = "black"
+
+                        recorder.startRecord("/dev/null")
+                    }
+                    else
+                    {
+                        recorder.stopRecord()
+                    }
+                }
+
+            }
+
+            Slider
+            {
+                id: vuValue
+                minimumValue: 0
+                maximumValue: 0.1
+                value: 0
+                width: parent.width - Theme.paddingLarge
+                visible: audioMode.checked
+                anchors.horizontalCenter: parent.horizontalCenter
             }
 
 
@@ -83,6 +202,14 @@ Page
                 text: "Rotate"
                 anchors.horizontalCenter: parent.horizontalCenter
                 description: "Rotate colors clockvise"
+                onCheckedChanged:
+                {
+                    if (audioMode.checked)
+                    {
+                        audioMode.checked = false
+                        recorder.stopRecord()
+                    }
+                }
             }
 
             Slider
@@ -97,6 +224,33 @@ Page
                 value: (rotateSpeed.maximumValue+rotateSpeed.minimumValue)/2
                 stepSize: (rotateSpeed.maximumValue-rotateSpeed.minimumValue)/2
                 valueText: (value == maximumValue) ? "Fast" : ((value == minimumValue) ? "Slow" : "Intermediate")
+            }
+
+            Button
+            {
+                text: "Set all leds"
+                anchors.horizontalCenter: parent.horizontalCenter
+                onClicked:
+                {
+                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog", { "colors": rainbow })
+                           dialog.accepted.connect(function() {
+                               console.log("change all leds to " + dialog.color)
+
+                               topleft.ledColor = dialog.color
+                               upperleft.ledColor = dialog.color
+                               middleleft.ledColor = dialog.color
+                               lowerleft.ledColor = dialog.color
+                               bottomleft.ledColor = dialog.color
+                               bottomright.ledColor = dialog.color
+                               lowerright.ledColor = dialog.color
+                               middleright.ledColor = dialog.color
+                               upperright.ledColor = dialog.color
+                               topright.ledColor = dialog.color
+
+                               updateAllColors()
+                           })
+                }
+
             }
         }
 
@@ -119,6 +273,8 @@ Page
                 middleright.ledColor = upperright.ledColor
                 upperright.ledColor =  topright.ledColor
                 topright.ledColor =    tmp;
+
+                updateAllColors()
             }
 
         }
@@ -142,10 +298,11 @@ Page
             {
                 anchors.fill: parent
                 onClicked: {
-                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog")
+                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog", { "colors": rainbow })
                            dialog.accepted.connect(function() {
                                console.log("change color to " + dialog.color)
                                parent.ledColor = dialog.color
+                               letohclass.setLedColors( {"topleft" : dialog.color})
                            })
                 }
             }
@@ -170,10 +327,11 @@ Page
             {
                 anchors.fill: parent
                 onClicked: {
-                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog")
+                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog", { "colors": rainbow })
                            dialog.accepted.connect(function() {
                                console.log("change color to " + dialog.color)
                                parent.ledColor = dialog.color
+                               letohclass.setLedColors( {"topright" : dialog.color})
                            })
                 }
             }
@@ -197,10 +355,11 @@ Page
             {
                 anchors.fill: parent
                 onClicked: {
-                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog")
+                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog", { "colors": rainbow })
                            dialog.accepted.connect(function() {
                                console.log("change color to " + dialog.color)
                                parent.ledColor = dialog.color
+                               letohclass.setLedColors( {"bottomleft" : dialog.color})
                            })
                 }
             }
@@ -224,10 +383,11 @@ Page
             {
                 anchors.fill: parent
                 onClicked: {
-                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog")
+                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog", { "colors": rainbow })
                            dialog.accepted.connect(function() {
                                console.log("change color to " + dialog.color)
                                parent.ledColor = dialog.color
+                               letohclass.setLedColors( {"bottomright" : dialog.color})
                            })
                 }
             }
@@ -250,10 +410,11 @@ Page
             {
                 anchors.fill: parent
                 onClicked: {
-                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog")
+                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog", { "colors": rainbow })
                            dialog.accepted.connect(function() {
                                console.log("change color to " + dialog.color)
                                parent.ledColor = dialog.color
+                               letohclass.setLedColors( {"middleleft" : dialog.color})
                            })
                 }
             }
@@ -276,10 +437,11 @@ Page
             {
                 anchors.fill: parent
                 onClicked: {
-                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog")
+                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog", { "colors": rainbow })
                            dialog.accepted.connect(function() {
                                console.log("change color to " + dialog.color)
                                parent.ledColor = dialog.color
+                               letohclass.setLedColors( {"middleright" : dialog.color})
                            })
                 }
             }
@@ -304,10 +466,11 @@ Page
             {
                 anchors.fill: parent
                 onClicked: {
-                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog")
+                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog", { "colors": rainbow })
                            dialog.accepted.connect(function() {
                                console.log("change color to " + dialog.color)
                                parent.ledColor = dialog.color
+                               letohclass.setLedColors( {"upperleft" : dialog.color})
                            })
                 }
             }
@@ -331,10 +494,11 @@ Page
             {
                 anchors.fill: parent
                 onClicked: {
-                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog")
+                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog", { "colors": rainbow })
                            dialog.accepted.connect(function() {
                                console.log("change color to " + dialog.color)
                                parent.ledColor = dialog.color
+                               letohclass.setLedColors( {"upperright" : dialog.color})
                            })
                 }
             }
@@ -358,10 +522,11 @@ Page
             {
                 anchors.fill: parent
                 onClicked: {
-                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog")
+                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog", { "colors": rainbow })
                            dialog.accepted.connect(function() {
                                console.log("change color to " + dialog.color)
                                parent.ledColor = dialog.color
+                               letohclass.setLedColors( {"lowerleft" : dialog.color})
                            })
                 }
             }
@@ -385,10 +550,11 @@ Page
             {
                 anchors.fill: parent
                 onClicked: {
-                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog")
+                    var dialog = pageStack.push("Sailfish.Silica.ColorPickerDialog", { "colors": rainbow })
                            dialog.accepted.connect(function() {
                                console.log("change color to " + dialog.color)
                                parent.ledColor = dialog.color
+                               letohclass.setLedColors( {"lowerright" : dialog.color})
                            })
                 }
             }

@@ -21,6 +21,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <QGuiApplication>
 #include <QQmlContext>
 #include <QCoreApplication>
+
+#include "qmultimediaaudiorecorder.h"
+#include "qmultimediavumeterbackend.h"
+
 #include "letohclass.h"
 
 
@@ -32,6 +36,9 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationVersion("0.1-1");
 
     qmlRegisterType<LetohClass>("LeTOH.LetohClass", 1, 0, "LetohClass");
+    qmlRegisterType<QMultimediaAudioRecorder>("LeTOH.LetohClass", 1, 0, "QMultimediaAudioRecorder");
+    qmlRegisterType<QMultimediaVuMeterBackend>("LeTOH.LetohClass", 1, 0, "QMultimediaVuMeterBackend");
+
 
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
     QScopedPointer<QQuickView> view(SailfishApp::createView());

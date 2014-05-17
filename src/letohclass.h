@@ -11,6 +11,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #ifndef LETOHCLASS_H
 #define LETOHCLASS_H
 #include <QObject>
+#include <QVariantMap>
 
 class LetohClass : public QObject
 {
@@ -23,12 +24,15 @@ public:
 
     QString readVersion();
     Q_INVOKABLE QString randomColor();
+    Q_INVOKABLE void setLedColors(QVariantMap colorMap);
 
 signals:
     void versionChanged();
 
 private:
     int randInt(int low, int high);
+
+    QVariantMap ledDrivers;
 
 };
 

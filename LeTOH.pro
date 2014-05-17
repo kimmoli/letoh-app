@@ -10,14 +10,20 @@ TARGET = LeTOH
 
 CONFIG += sailfishapp
 
+QT += multimedia
+
 DEFINES += "APPVERSION=\\\"$${SPECVERSION}\\\""
 
 message($${DEFINES})
 
 SOURCES += src/LeTOH.cpp \
-	src/letohclass.cpp
+	src/letohclass.cpp \
+    src/qmultimediavumeterbackend.cpp \
+    src/qmultimediaaudiorecorder.cpp
 	
-HEADERS += src/letohclass.h
+HEADERS += src/letohclass.h \
+    src/qmultimediavumeterbackend.h \
+    src/qmultimediaaudiorecorder.h
 
 OTHER_FILES += qml/LeTOH.qml \
     qml/cover/CoverPage.qml \
