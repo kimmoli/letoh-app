@@ -126,7 +126,7 @@ Page
             Button
             {
                 text: "Randomize"
-                enabled: audioMode.checked
+                enabled: !audioMode.checked
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked:
                 {
@@ -148,7 +148,7 @@ Page
             Button
             {
                 text: "Rainbow'ze"
-                enabled: audioMode.checked
+                enabled: !audioMode.checked
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked:
                 {
@@ -170,7 +170,7 @@ Page
             Button
             {
                 text: "Select color"
-                enabled: audioMode.checked
+                enabled: !audioMode.checked
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked:
                 {
