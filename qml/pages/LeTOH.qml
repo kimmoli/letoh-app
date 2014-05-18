@@ -54,6 +54,7 @@ Page
             audioMode.checked = false
             animateEnable.checked = false
             breathe.stop()
+            rainbowFade.stop()
         }
     }
 
@@ -130,7 +131,7 @@ Page
             Button
             {
                 text: "Randomize"
-                enabled: !audioMode.checked && !(animateEnable.checked && animateMode.currentIndex == 1)
+                enabled: !audioMode.checked && !(animateEnable.checked && animateMode.currentIndex != 0)
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked:
                 {
@@ -152,7 +153,7 @@ Page
             Button
             {
                 text: "Rainbow'ze"
-                enabled: !audioMode.checked && !(animateEnable.checked && animateMode.currentIndex == 1)
+                enabled: !audioMode.checked && !(animateEnable.checked && animateMode.currentIndex != 0)
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked:
                 {
@@ -174,7 +175,7 @@ Page
             Button
             {
                 text: "Select color"
-                enabled: !audioMode.checked
+                enabled: !audioMode.checked && !(animateEnable.checked && animateMode.currentIndex == 2)
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked:
                 {
@@ -283,9 +284,15 @@ Page
                     {
                         if (animateMode.currentIndex == 1)
                             breathe.restart()
+                        if (animateMode.currentIndex == 2)
+                            rainbowFade.restart()
+
                     }
                     else
+                    {
                         breathe.stop()
+                        rainbowFade.stop()
+                    }
                 }
             }
 
@@ -298,8 +305,9 @@ Page
 
                 menu: ContextMenu
                 {
-                    MenuItem { text: "Rotate clockwise"; onClicked: breathe.stop() }
-                    MenuItem { text: "Breathé";  onClicked: breathe.restart() }
+                    MenuItem { text: "Rotate clockwise"; onClicked: { breathe.stop(); rainbowFade.stop() } }
+                    MenuItem { text: "Breathé";  onClicked: { breathe.restart(); rainbowFade.stop() } }
+                    MenuItem { text: "Rainbow fade";  onClicked: { rainbowFade.restart(); breathe.stop() } }
                 }
             }
 
@@ -318,8 +326,11 @@ Page
                 onValueChanged:
                 {
                     breathe.breatheDuration = 5 * ((animateSpeed.maximumValue+animateSpeed.minimumValue)-animateSpeed.value)
+                    rainbowFade.fadeDuration = 5 * ((animateSpeed.maximumValue+animateSpeed.minimumValue)-animateSpeed.value)
                     if (breathe.running)
                         breathe.restart()
+                    if (rainbowFade.running)
+                        rainbowFade.restart()
                 }
             }
 
@@ -350,6 +361,86 @@ Page
                 }
 
                 updateAllColors()
+            }
+
+        }
+
+        SequentialAnimation
+        {
+            id: rainbowFade
+            loops: Animation.Infinite
+            running: false
+            property int fadeDuration : 500
+
+            ColorAnimation
+            {
+                targets: [ topleft, upperleft, middleleft, lowerleft, bottomleft, bottomright, lowerright, middleright, upperright, topright ]
+                properties: "ledColor"
+                to: rainbow[0]
+                duration: rainbowFade.fadeDuration
+            }
+            ColorAnimation
+            {
+                targets: [ topleft, upperleft, middleleft, lowerleft, bottomleft, bottomright, lowerright, middleright, upperright, topright ]
+                properties: "ledColor"
+                to: rainbow[1]
+                duration: rainbowFade.fadeDuration
+            }
+            ColorAnimation
+            {
+                targets: [ topleft, upperleft, middleleft, lowerleft, bottomleft, bottomright, lowerright, middleright, upperright, topright ]
+                properties: "ledColor"
+                to: rainbow[2]
+                duration: rainbowFade.fadeDuration
+            }
+            ColorAnimation
+            {
+                targets: [ topleft, upperleft, middleleft, lowerleft, bottomleft, bottomright, lowerright, middleright, upperright, topright ]
+                properties: "ledColor"
+                to: rainbow[3]
+                duration: rainbowFade.fadeDuration
+            }
+            ColorAnimation
+            {
+                targets: [ topleft, upperleft, middleleft, lowerleft, bottomleft, bottomright, lowerright, middleright, upperright, topright ]
+                properties: "ledColor"
+                to: rainbow[4]
+                duration: rainbowFade.fadeDuration
+            }
+            ColorAnimation
+            {
+                targets: [ topleft, upperleft, middleleft, lowerleft, bottomleft, bottomright, lowerright, middleright, upperright, topright ]
+                properties: "ledColor"
+                to: rainbow[5]
+                duration: rainbowFade.fadeDuration
+            }
+            ColorAnimation
+            {
+                targets: [ topleft, upperleft, middleleft, lowerleft, bottomleft, bottomright, lowerright, middleright, upperright, topright ]
+                properties: "ledColor"
+                to: rainbow[6]
+                duration: rainbowFade.fadeDuration
+            }
+            ColorAnimation
+            {
+                targets: [ topleft, upperleft, middleleft, lowerleft, bottomleft, bottomright, lowerright, middleright, upperright, topright ]
+                properties: "ledColor"
+                to: rainbow[7]
+                duration: rainbowFade.fadeDuration
+            }
+            ColorAnimation
+            {
+                targets: [ topleft, upperleft, middleleft, lowerleft, bottomleft, bottomright, lowerright, middleright, upperright, topright ]
+                properties: "ledColor"
+                to: rainbow[8]
+                duration: rainbowFade.fadeDuration
+            }
+            ColorAnimation
+            {
+                targets: [ topleft, upperleft, middleleft, lowerleft, bottomleft, bottomright, lowerright, middleright, upperright, topright ]
+                properties: "ledColor"
+                to: rainbow[9]
+                duration: rainbowFade.fadeDuration
             }
 
         }
