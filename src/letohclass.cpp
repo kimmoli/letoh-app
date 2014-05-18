@@ -117,3 +117,4 @@ QString LetohClass::randomColor()
 {
     return QString("#%1%2%3").arg(randInt(0, 255), 2, 16, QChar('0')).arg(randInt(0, 255), 2, 16, QChar('0')).arg(randInt(0, 255), 2, 16, QChar('0')).toUpper();
 }
+

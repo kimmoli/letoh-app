@@ -18,9 +18,12 @@ Page
     property int ledSize: 40
     property color tmp : "black"
 
+    property color breatheColor  : "white"
+
     property var rainbow : [ "#ff0080", "#ff0000", "#ff8000", "#ffff00", "#00ff00",
                              "#00ff80", "#00ffff", "#0000ff", "#8000ff", "#ff00ff",
                              "#000000", "#ffffff" ] // also black and white
+
 
     function updateAllColors()
     {
@@ -49,7 +52,8 @@ Page
         {
             recorder.stopRecord()
             audioMode.checked = false
-            animateMode.checked = false
+            animateEnable.checked = false
+            breathe.stop()
         }
     }
 
@@ -126,7 +130,7 @@ Page
             Button
             {
                 text: "Randomize"
-                enabled: !audioMode.checked
+                enabled: !audioMode.checked && !(animateEnable.checked && animateMode.currentIndex == 1)
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked:
                 {
@@ -148,7 +152,7 @@ Page
             Button
             {
                 text: "Rainbow'ze"
-                enabled: !audioMode.checked
+                enabled: !audioMode.checked && !(animateEnable.checked && animateMode.currentIndex == 1)
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked:
                 {
@@ -178,18 +182,27 @@ Page
                            dialog.accepted.connect(function() {
                                console.log("change all leds to " + dialog.color)
 
-                               topleft.ledColor = dialog.color
-                               upperleft.ledColor = dialog.color
-                               middleleft.ledColor = dialog.color
-                               lowerleft.ledColor = dialog.color
-                               bottomleft.ledColor = dialog.color
-                               bottomright.ledColor = dialog.color
-                               lowerright.ledColor = dialog.color
-                               middleright.ledColor = dialog.color
-                               upperright.ledColor = dialog.color
-                               topright.ledColor = dialog.color
+                               if (animateEnable.checked && animateMode.currentIndex == 1)
+                               {
+                                   breatheColor = dialog.color
+                                   if (breathe.running)
+                                       breathe.restart()
+                               }
+                               else
+                               {
+                                   topleft.ledColor = dialog.color
+                                   upperleft.ledColor = dialog.color
+                                   middleleft.ledColor = dialog.color
+                                   lowerleft.ledColor = dialog.color
+                                   bottomleft.ledColor = dialog.color
+                                   bottomright.ledColor = dialog.color
+                                   lowerright.ledColor = dialog.color
+                                   middleright.ledColor = dialog.color
+                                   upperright.ledColor = dialog.color
+                                   topright.ledColor = dialog.color
 
-                               updateAllColors()
+                                   updateAllColors()
+                               }
                            })
                 }
 
@@ -203,11 +216,11 @@ Page
                 description: "Mic level VU meter"
                 onCheckedChanged:
                 {
-                    animateMode.checked = false
+                    animateEnable.checked = false
 
                     if (checked)
                     {
-                        animateMode.checked = false
+                        animateEnable.checked = false
                         topleft.ledColor = "black"
                         upperleft.ledColor = "black"
                         middleleft.ledColor = "black"
@@ -254,7 +267,7 @@ Page
 
             TextSwitch
             {
-                id: animateMode
+                id: animateEnable
                 text: "Animation"
                 anchors.horizontalCenter: parent.horizontalCenter
                 description: "Select from predefined movements"
@@ -265,6 +278,28 @@ Page
                         audioMode.checked = false
                         recorder.stopRecord()
                     }
+
+                    if (checked)
+                    {
+                        if (animateMode.currentIndex == 1)
+                            breathe.restart()
+                    }
+                    else
+                        breathe.stop()
+                }
+            }
+
+            ComboBox
+            {
+                id: animateMode
+                visible: animateEnable.checked
+                width: parent.width
+                label: "Mode: "
+
+                menu: ContextMenu
+                {
+                    MenuItem { text: "Rotate clockwise"; onClicked: breathe.stop() }
+                    MenuItem { text: "Breathé";  onClicked: breathe.restart() }
                 }
             }
 
@@ -272,7 +307,7 @@ Page
             {
                 id: animateSpeed
                 label: "Speed"
-                visible: animateMode.checked
+                visible: animateEnable.checked
                 width: parent.width - Theme.paddingLarge
                 anchors.horizontalCenter: parent.horizontalCenter
                 minimumValue: 100
@@ -280,35 +315,69 @@ Page
                 value: (maximumValue+minimumValue)/2
                 stepSize: (maximumValue-minimumValue)/2
                 valueText: (value == maximumValue) ? "Fast" : ((value == minimumValue) ? "Slow" : "Intermediate")
+                onValueChanged:
+                {
+                    breathe.breatheDuration = 5 * ((animateSpeed.maximumValue+animateSpeed.minimumValue)-animateSpeed.value)
+                    if (breathe.running)
+                        breathe.restart()
+                }
             }
 
         }
 
         Timer
         {
+            id: animateTimer
             interval: (animateSpeed.maximumValue+animateSpeed.minimumValue)-animateSpeed.value
-            running: animateMode.checked && applicationActive  && page.status === PageStatus.Active
+            running: animateEnable.checked && applicationActive  && page.status === PageStatus.Active
             repeat: true
             onTriggered:
             {
-                tmp = topleft.ledColor
+                if (animateMode.currentIndex == 0) // Rotate clockwise
+                {
+                    tmp = topleft.ledColor
 
-                topleft.ledColor =     upperleft.ledColor
-                upperleft.ledColor =   middleleft.ledColor
-                middleleft.ledColor =  lowerleft.ledColor
-                lowerleft.ledColor =   bottomleft.ledColor
-                bottomleft.ledColor =  bottomright.ledColor
-                bottomright.ledColor = lowerright.ledColor
-                lowerright.ledColor =  middleright.ledColor
-                middleright.ledColor = upperright.ledColor
-                upperright.ledColor =  topright.ledColor
-                topright.ledColor =    tmp;
+                    topleft.ledColor =     upperleft.ledColor
+                    upperleft.ledColor =   middleleft.ledColor
+                    middleleft.ledColor =  lowerleft.ledColor
+                    lowerleft.ledColor =   bottomleft.ledColor
+                    bottomleft.ledColor =  bottomright.ledColor
+                    bottomright.ledColor = lowerright.ledColor
+                    lowerright.ledColor =  middleright.ledColor
+                    middleright.ledColor = upperright.ledColor
+                    upperright.ledColor =  topright.ledColor
+                    topright.ledColor =    tmp;
+                }
 
                 updateAllColors()
             }
 
         }
 
+        SequentialAnimation
+        {
+            id: breathe
+            loops: Animation.Infinite
+            running: false
+            property int breatheDuration : 500
+
+            PropertyAnimation
+            {
+                targets: [ topleft, upperleft, middleleft, lowerleft, bottomleft, bottomright, lowerright, middleright, upperright, topright ]
+                properties: "ledColor"
+                from: "black"
+                to: breatheColor
+                duration: breathe.breatheDuration
+            }
+            PropertyAnimation
+            {
+                targets: [ topleft, upperleft, middleleft, lowerleft, bottomleft, bottomright, lowerright, middleright, upperright, topright ]
+                properties: "ledColor"
+                from: breatheColor
+                to: "black"
+                duration: breathe.breatheDuration
+            }
+        }
 
         Rectangle
         {
@@ -571,6 +640,7 @@ Page
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: (parent.height/3)
             property color ledColor: "red"
+
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "black" }
                 GradientStop { position: 0.5; color: lowerright.ledColor }
