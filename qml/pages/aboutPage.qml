@@ -8,9 +8,9 @@ import Sailfish.Silica 1.0
 
 Page
 {
-    property string name
-    property string year
-    property string version
+    property string name : "Default name"
+    property string year : "2099"
+    property string version : "0.1"
 
     id: page
 

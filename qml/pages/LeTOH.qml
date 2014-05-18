@@ -13,10 +13,10 @@ Page
 {
     id: page
 
+    property bool appActive : false
+
     property int ledSize: 40
     property color tmp : "black"
-
-    property real vuMax : 0.0
 
     property var rainbow : [ "#ff0080", "#ff0000", "#ff8000", "#ffff00", "#00ff00",
                              "#00ff80", "#00ffff", "#0000ff", "#8000ff", "#ff00ff",
@@ -38,20 +38,34 @@ Page
             "topright" : topright.ledColor } )
     }
 
+    onAppActiveChanged:
+    {
+        /* Seems that there is applicationActive, but no onApplicationActive -signal
+            So i had to do this with secondary signal appActive which is connected
+            on ApplicationWindow to applicationActive */
+
+        console.log("Application Active: " + appActive)
+        if (appActive == false)
+        {
+            recorder.stopRecord()
+            audioMode.checked = false
+            animateMode.checked = false
+        }
+    }
+
     QMultimediaAudioRecorder
     {
         id: recorder
         onVuMeterValueUpdate:
         {
-            if (value > vuMax)
+            if (value > vuValue.vuPeak)
             {
-                vuMax = value
                 vuPeakHold.restart()
-                vuValue.maximumValue = vuMax
+                vuValue.vuPeak = value
             }
             vuValue.value = value
 
-            var vuStep = vuMax/6
+            var vuStep = vuValue.vuPeak/6
 
             topleft.ledColor = value > (5*vuStep) ? rainbow[1] : "black"
             topright.ledColor = topleft.ledColor
@@ -63,19 +77,20 @@ Page
             lowerright.ledColor = lowerleft.ledColor
             bottomleft.ledColor = value > (1*vuStep) ? rainbow[5] : "black"
             bottomright.ledColor = bottomleft.ledColor
+
+            updateAllColors()
         }
     }
 
     Timer
     {
         id: vuPeakHold
-        interval: 500
+        interval: 750
         repeat: true
-        running: audioMode.checked
+        running: audioMode.checked && applicationActive  && page.status === PageStatus.Active
         onTriggered:
         {
-            vuMax = 0.1
-            vuValue.maximumValue = vuMax
+            vuValue.vuPeak = 0.1
         }
     }
 
@@ -111,6 +126,7 @@ Page
             Button
             {
                 text: "Randomize"
+                enabled: audioMode.checked
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked:
                 {
@@ -132,6 +148,7 @@ Page
             Button
             {
                 text: "Rainbow'ze"
+                enabled: audioMode.checked
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked:
                 {
@@ -150,85 +167,10 @@ Page
                 }
             }
 
-            TextSwitch
-            {
-                id: audioMode
-                text: "Audio mode"
-                anchors.horizontalCenter: parent.horizontalCenter
-                description: "Rotate colors clockvise"
-                onCheckedChanged:
-                {
-                    rotateColors.checked = false
-
-                    if (checked)
-                    {
-                        rotateColors.checked = false
-                        topleft.ledColor = "black"
-                        upperleft.ledColor = "black"
-                        middleleft.ledColor = "black"
-                        lowerleft.ledColor = "black"
-                        bottomleft.ledColor = "black"
-                        bottomright.ledColor = "black"
-                        lowerright.ledColor = "black"
-                        middleright.ledColor = "black"
-                        upperright.ledColor = "black"
-                        topright.ledColor = "black"
-
-                        recorder.startRecord("/dev/null")
-                    }
-                    else
-                    {
-                        recorder.stopRecord()
-                    }
-                }
-
-            }
-
-            Slider
-            {
-                id: vuValue
-                minimumValue: 0
-                maximumValue: 0.1
-                value: 0
-                width: parent.width - Theme.paddingLarge
-                visible: audioMode.checked
-                anchors.horizontalCenter: parent.horizontalCenter
-            }
-
-
-            TextSwitch
-            {
-                id: rotateColors
-                text: "Rotate"
-                anchors.horizontalCenter: parent.horizontalCenter
-                description: "Rotate colors clockvise"
-                onCheckedChanged:
-                {
-                    if (audioMode.checked)
-                    {
-                        audioMode.checked = false
-                        recorder.stopRecord()
-                    }
-                }
-            }
-
-            Slider
-            {
-                id: rotateSpeed
-                label: "Speed"
-                visible: rotateColors.checked
-                width: parent.width - Theme.paddingLarge
-                anchors.horizontalCenter: parent.horizontalCenter
-                minimumValue: 100
-                maximumValue: 700
-                value: (rotateSpeed.maximumValue+rotateSpeed.minimumValue)/2
-                stepSize: (rotateSpeed.maximumValue-rotateSpeed.minimumValue)/2
-                valueText: (value == maximumValue) ? "Fast" : ((value == minimumValue) ? "Slow" : "Intermediate")
-            }
-
             Button
             {
-                text: "Set all leds"
+                text: "Select color"
+                enabled: audioMode.checked
                 anchors.horizontalCenter: parent.horizontalCenter
                 onClicked:
                 {
@@ -252,12 +194,100 @@ Page
                 }
 
             }
+
+            TextSwitch
+            {
+                id: audioMode
+                text: "Disco Stu"
+                anchors.horizontalCenter: parent.horizontalCenter
+                description: "Mic level VU meter"
+                onCheckedChanged:
+                {
+                    animateMode.checked = false
+
+                    if (checked)
+                    {
+                        animateMode.checked = false
+                        topleft.ledColor = "black"
+                        upperleft.ledColor = "black"
+                        middleleft.ledColor = "black"
+                        lowerleft.ledColor = "black"
+                        bottomleft.ledColor = "black"
+                        bottomright.ledColor = "black"
+                        lowerright.ledColor = "black"
+                        middleright.ledColor = "black"
+                        upperright.ledColor = "black"
+                        topright.ledColor = "black"
+
+                        recorder.startRecord("/dev/null")
+                    }
+                    else
+                    {
+                        recorder.stopRecord()
+                    }
+                }
+            }
+
+            Slider
+            {
+                id: vuValue
+
+                property real vuPeak: 0.1
+
+                minimumValue: 0
+                maximumValue: 0.5
+                value: 0
+                width: parent.width
+                visible: audioMode.checked
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                GlassItem
+                {
+                    color: "red"
+                    falloffRadius: 0.15
+                    radius: 0.15
+                    cache: false
+                    anchors.verticalCenter: parent.verticalCenter
+                    x: (parent.width - (5*Theme.paddingLarge)) * (parent.vuPeak / parent.maximumValue)
+                }
+            }
+
+            TextSwitch
+            {
+                id: animateMode
+                text: "Animation"
+                anchors.horizontalCenter: parent.horizontalCenter
+                description: "Select from predefined movements"
+                onCheckedChanged:
+                {
+                    if (audioMode.checked)
+                    {
+                        audioMode.checked = false
+                        recorder.stopRecord()
+                    }
+                }
+            }
+
+            Slider
+            {
+                id: animateSpeed
+                label: "Speed"
+                visible: animateMode.checked
+                width: parent.width - Theme.paddingLarge
+                anchors.horizontalCenter: parent.horizontalCenter
+                minimumValue: 100
+                maximumValue: 700
+                value: (maximumValue+minimumValue)/2
+                stepSize: (maximumValue-minimumValue)/2
+                valueText: (value == maximumValue) ? "Fast" : ((value == minimumValue) ? "Slow" : "Intermediate")
+            }
+
         }
 
         Timer
         {
-            interval: (rotateSpeed.maximumValue+rotateSpeed.minimumValue)-rotateSpeed.value
-            running: rotateColors.checked
+            interval: (animateSpeed.maximumValue+animateSpeed.minimumValue)-animateSpeed.value
+            running: animateMode.checked && applicationActive  && page.status === PageStatus.Active
             repeat: true
             onTriggered:
             {

@@ -16,6 +16,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <QVariantMap>
 #include <QColor>
 
+#define SHUTUP
+
 
 LetohClass::LetohClass(QObject *parent) :
     QObject(parent)

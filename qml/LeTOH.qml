@@ -34,7 +34,13 @@ import "pages"
 
 ApplicationWindow
 {
-    initialPage: Component { LeTOH { } }
+    initialPage: Component
+    {
+        LeTOH
+        {
+            appActive: applicationActive
+        }
+    }
 
     cover: Qt.resolvedUrl("cover/CoverPage.qml")
 }
