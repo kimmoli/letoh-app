@@ -19,11 +19,15 @@ message($${DEFINES})
 SOURCES += src/LeTOH.cpp \
 	src/letohclass.cpp \
     src/qmultimediavumeterbackend.cpp \
-    src/qmultimediaaudiorecorder.cpp
+    src/qmultimediaaudiorecorder.cpp \
+    src/driverBase.cpp \
+    src/pca9685.cpp
 	
 HEADERS += src/letohclass.h \
     src/qmultimediavumeterbackend.h \
-    src/qmultimediaaudiorecorder.h
+    src/qmultimediaaudiorecorder.h \
+    src/driverBase.h \
+    src/pca9685.h
 
 OTHER_FILES += qml/LeTOH.qml \
     qml/cover/CoverPage.qml \

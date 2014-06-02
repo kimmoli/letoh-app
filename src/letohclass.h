@@ -12,6 +12,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #define LETOHCLASS_H
 #include <QObject>
 #include <QVariantMap>
+#include "pca9685.h"
 
 class LetohClass : public QObject
 {
@@ -31,8 +32,12 @@ signals:
 
 private:
     int randInt(int low, int high);
+    void controlVdd(bool state);
 
     QVariantMap ledDrivers;
+
+    PCA9685* ledDriver0;
+    PCA9685* ledDriver1;
 
 };
 

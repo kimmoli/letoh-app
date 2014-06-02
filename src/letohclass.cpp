@@ -15,6 +15,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 #include <QDebug>
 #include <QVariantMap>
 #include <QColor>
+#include <QThread>
+#include "pca9685.h"
 
 #define SHUTUP
 
@@ -71,11 +73,18 @@ LetohClass::LetohClass(QObject *parent) :
         qDebug() << iter.key() << " = " << qvariant_cast<QVariantMap>(iter.value())["color"].toString();
     }
 
+    controlVdd(true);
+
+    QThread::msleep(100);
+
+    ledDriver0 = new PCA9685(0x40);
+    ledDriver1 = new PCA9685(0x41);
 
 }
 
 LetohClass::~LetohClass()
 {
+    controlVdd(false);
 }
 
 /* Return git describe as string (see .pro file) */
@@ -97,12 +106,48 @@ void LetohClass::setLedColors(QVariantMap colorMap)
         ledDrivers[iter.key()] = QVariant(t);
     }
 
-#ifndef SHUTUP
-    qDebug() << "Led values changed:";
+    char data[120] = { 0 };
 
     for(QVariantMap::const_iterator iter = ledDrivers.begin(); iter != ledDrivers.end(); ++iter)
-        qDebug() << iter.key() << " = " << qvariant_cast<QVariantMap>(iter.value())["color"].toString();
-#endif
+    {
+        int offset = 0;
+
+        QVariantMap t = qvariant_cast<QVariantMap>(ledDrivers[iter.key()]);
+
+        if (t["address"].toInt() == 0x41)
+            offset = 60;
+
+        int red = QColor(t["color"].toString()).red();
+        int green = QColor(t["color"].toString()).green();
+        int blue = QColor(t["color"].toString()).blue();
+
+        /* Setting maximun dutycycle to 50% for safety during testing */
+        int ledOnRed = 2047;
+        int ledOnGreen = 2047;
+        int ledOnBlue = 2047;
+
+        int ledOffRed = ledOnRed + 8*red;
+        int ledOffGreen = ledOnGreen + 8*green;
+        int ledOffBlue = ledOnBlue + 8*blue;
+
+        data[offset + 4*t["red"].toInt()+0] = ledOnRed & 0xff;
+        data[offset + 4*t["red"].toInt()+1] = (ledOnRed >> 8) & 0xff;
+        data[offset + 4*t["red"].toInt()+2] = ledOffRed & 0xff;
+        data[offset + 4*t["red"].toInt()+3] = (ledOffRed >> 8) & 0xff;
+        data[offset + 4*t["green"].toInt()+0] = ledOnGreen & 0xff;
+        data[offset + 4*t["green"].toInt()+1] = (ledOnGreen >> 8) & 0xff;
+        data[offset + 4*t["green"].toInt()+2] = ledOffGreen & 0xff;
+        data[offset + 4*t["green"].toInt()+3] = (ledOffGreen >> 8) & 0xff;
+        data[offset + 4*t["blue"].toInt()+0] = ledOnBlue & 0xff;
+        data[offset + 4*t["blue"].toInt()+1] = (ledOnBlue >> 8) & 0xff;
+        data[offset + 4*t["blue"].toInt()+2] = ledOffBlue & 0xff;
+        data[offset + 4*t["blue"].toInt()+3] = (ledOffBlue >> 8) & 0xff;
+
+        //qDebug() << iter.key() << " = " << qvariant_cast<QVariantMap>(iter.value())["color"].toString();
+    }
+
+    ledDriver0->updateLeds(data,0,60);
+    ledDriver1->updateLeds(data,60,60);
 }
 
 
@@ -118,3 +163,19 @@ QString LetohClass::randomColor()
     return QString("#%1%2%3").arg(randInt(0, 255), 2, 16, QChar('0')).arg(randInt(0, 255), 2, 16, QChar('0')).arg(randInt(0, 255), 2, 16, QChar('0')).toUpper();
 }
 
+/************************************************************************/
+
+void LetohClass::controlVdd(bool state)
+{
+    int fd = open("/sys/devices/platform/reg-userspace-consumer.0/state", O_WRONLY);
+
+    if (!(fd < 0))
+    {
+        if (write (fd, state ? "1" : "0", 1) != 1)
+            qDebug() << "Failed to control VDD.";
+
+        close(fd);
+    }
+
+    return;
+}

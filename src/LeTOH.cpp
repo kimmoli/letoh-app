@@ -30,10 +30,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication::setOrganizationDomain("KimmoLi");
-    QCoreApplication::setOrganizationName("KimmoLi");
-    QCoreApplication::setApplicationName("LeTOH");
-    QCoreApplication::setApplicationVersion("0.1-1");
 
     qmlRegisterType<LetohClass>("LeTOH.LetohClass", 1, 0, "LetohClass");
     qmlRegisterType<QMultimediaAudioRecorder>("LeTOH.LetohClass", 1, 0, "QMultimediaAudioRecorder");
