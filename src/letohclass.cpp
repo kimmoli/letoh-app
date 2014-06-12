@@ -20,6 +20,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #define SHUTUP
 
+//#define TOHKBD_DEMO
+
 
 LetohClass::LetohClass(QObject *parent) :
     QObject(parent)
@@ -47,25 +49,38 @@ LetohClass::LetohClass(QObject *parent) :
 
     /* Assign I2C address, PCA9685 ports and default colors */
 
-    driver["address"] = 0x40; driver["red"] = 1; driver["green"] = 2; driver["blue"] = 0; driver["color"] = QColor("#ff0000");
+#ifdef TOHKBD_DEMO
+    driver["address"] = 0x40; driver["red"] = 7; driver["green"] = 6; driver["blue"] = 8; driver["color"] = QColor("#000000");
     ledDrivers["topright"] = QVariant(driver);
-    driver["address"] = 0x40; driver["red"] = 4; driver["green"] = 5; driver["blue"] = 3; driver["color"] = QColor("#ff0000");
+    driver["address"] = 0x40; driver["red"] = 10; driver["green"] = 9; driver["blue"] = 11; driver["color"] = QColor("#000000");
     ledDrivers["upperright"] = QVariant(driver);
-    driver["address"] = 0x40; driver["red"] = 7; driver["green"] = 8; driver["blue"] = 6; driver["color"] = QColor("#ff0000");
+    driver["address"] = 0x40; driver["red"] = 4; driver["green"] = 3; driver["blue"] = 5; driver["color"] = QColor("#000000");
     ledDrivers["middleright"] = QVariant(driver);
-    driver["address"] = 0x40; driver["red"] = 10; driver["green"] = 11; driver["blue"] = 9; driver["color"] = QColor("#ff0000");
+    driver["address"] = 0x40; driver["red"] = 1; driver["green"] = 0; driver["blue"] = 2; driver["color"] = QColor("#000000");
     ledDrivers["lowerright"] = QVariant(driver);
-    driver["address"] = 0x40; driver["red"] = 13; driver["green"] = 14; driver["blue"] = 12; driver["color"] = QColor("#ff0000");
+    driver["address"] = 0x40; driver["red"] = 13; driver["green"] = 12; driver["blue"] = 14; driver["color"] = QColor("#000000");
     ledDrivers["bottomright"] = QVariant(driver);
-    driver["address"] = 0x41; driver["red"] = 1; driver["green"] = 2; driver["blue"] = 0; driver["color"] = QColor("#ff0000");
+#else
+    driver["address"] = 0x40; driver["red"] = 1; driver["green"] = 0; driver["blue"] = 2; driver["color"] = QColor("#ff0000");
+    ledDrivers["topright"] = QVariant(driver);
+    driver["address"] = 0x40; driver["red"] = 4; driver["green"] = 3; driver["blue"] = 5; driver["color"] = QColor("#000000");
+    ledDrivers["upperright"] = QVariant(driver);
+    driver["address"] = 0x40; driver["red"] = 7; driver["green"] = 6; driver["blue"] = 8; driver["color"] = QColor("#000000");
+    ledDrivers["middleright"] = QVariant(driver);
+    driver["address"] = 0x40; driver["red"] = 10; driver["green"] = 9; driver["blue"] = 11; driver["color"] = QColor("#000000");
+    ledDrivers["lowerright"] = QVariant(driver);
+    driver["address"] = 0x40; driver["red"] = 13; driver["green"] = 12; driver["blue"] = 14; driver["color"] = QColor("#000000");
+    ledDrivers["bottomright"] = QVariant(driver);
+#endif
+    driver["address"] = 0x41; driver["red"] = 1; driver["green"] = 0; driver["blue"] = 2; driver["color"] = QColor("#000000");
     ledDrivers["bottomleft"] = QVariant(driver);
-    driver["address"] = 0x41; driver["red"] = 4; driver["green"] = 5; driver["blue"] = 3; driver["color"] = QColor("#ff0000");
+    driver["address"] = 0x41; driver["red"] = 4; driver["green"] = 3; driver["blue"] = 5; driver["color"] = QColor("#000000");
     ledDrivers["lowerleft"] = QVariant(driver);
-    driver["address"] = 0x41; driver["red"] = 7; driver["green"] = 8; driver["blue"] = 6; driver["color"] = QColor("#ff0000");
+    driver["address"] = 0x41; driver["red"] = 7; driver["green"] = 6; driver["blue"] = 8; driver["color"] = QColor("#000000");
     ledDrivers["middleleft"] = QVariant(driver);
-    driver["address"] = 0x41; driver["red"] = 10; driver["green"] = 11; driver["blue"] = 9; driver["color"] = QColor("#ff0000");
+    driver["address"] = 0x41; driver["red"] = 10; driver["green"] = 9; driver["blue"] = 11; driver["color"] = QColor("#000000");
     ledDrivers["upperleft"] = QVariant(driver);
-    driver["address"] = 0x41; driver["red"] = 13; driver["green"] = 14; driver["blue"] = 12; driver["color"] = QColor("#ff0000");
+    driver["address"] = 0x41; driver["red"] = 13; driver["green"] = 12; driver["blue"] = 14; driver["color"] = QColor("#00ff00");
     ledDrivers["topleft"] = QVariant(driver);
 
     for(QVariantMap::const_iterator iter = ledDrivers.begin(); iter != ledDrivers.end(); ++iter)
@@ -78,7 +93,9 @@ LetohClass::LetohClass(QObject *parent) :
     QThread::msleep(100);
 
     ledDriver0 = new PCA9685(0x40);
+#ifndef TOHKBD_DEMO
     ledDriver1 = new PCA9685(0x41);
+#endif
 
 }
 
@@ -123,11 +140,11 @@ void LetohClass::setLedColors(QVariantMap colorMap)
 
         /* Setting maximun dutycycle to 50% for safety during testing */
         int ledOnRed = 2047;
-        int ledOnGreen = 2047;
-        int ledOnBlue = 2047;
+        int ledOnGreen = 1023;
+        int ledOnBlue = 0;
 
         int ledOffRed = ledOnRed + 8*red;
-        int ledOffGreen = ledOnGreen + 8*green;
+        int ledOffGreen = ledOnGreen + 12*green;
         int ledOffBlue = ledOnBlue + 8*blue;
 
         data[offset + 4*t["red"].toInt()+0] = ledOnRed & 0xff;
@@ -147,7 +164,9 @@ void LetohClass::setLedColors(QVariantMap colorMap)
     }
 
     ledDriver0->updateLeds(data,0,60);
+#ifndef TOHKBD_DEMO
     ledDriver1->updateLeds(data,60,60);
+#endif
 }
 
 
