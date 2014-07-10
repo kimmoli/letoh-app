@@ -41,28 +41,33 @@ Page
             "topright" : topright.ledColor } )
     }
 
-    onAppActiveChanged:
-    {
-        /* Seems that there is applicationActive, but no onApplicationActive -signal
-            So i had to do this with secondary signal appActive which is connected
-            on ApplicationWindow to applicationActive */
+//    onAppActiveChanged:
+//    {
+//        /* Seems that there is applicationActive, but no onApplicationActive -signal
+//            So i had to do this with secondary signal appActive which is connected
+//            on ApplicationWindow to applicationActive */
 
-        console.log("Application Active: " + appActive)
-        if (appActive == false)
-        {
-            recorder.stopRecord()
-            audioMode.checked = false
-            //animateEnable.checked = false
-            //breathe.stop()
-            //rainbowFade.stop()
-        }
-    }
+//        console.log("Application Active: " + appActive)
+//        if (appActive == false)
+//        {
+//            recorder.stopRecord()
+//            audioMode.checked = false
+//            //animateEnable.checked = false
+//            //breathe.stop()
+//            //rainbowFade.stop()
+//        }
+//    }
 
     QMultimediaAudioRecorder
     {
         id: recorder
         onVuMeterValueUpdate:
         {
+            if (vuMeterRateLimiter.running)
+                return
+
+            vuMeterRateLimiter.restart()
+
             if (value > vuValue.vuPeak)
             {
                 vuPeakHold.restart()
@@ -89,10 +94,16 @@ Page
 
     Timer
     {
+        id: vuMeterRateLimiter
+        interval: 5
+    }
+
+    Timer
+    {
         id: vuPeakHold
         interval: 750
         repeat: true
-        running: audioMode.checked && applicationActive  && page.status === PageStatus.Active
+        running: audioMode.checked //&& applicationActive  && page.status === PageStatus.Active
         onTriggered:
         {
             vuValue.vuPeak = 0.1
