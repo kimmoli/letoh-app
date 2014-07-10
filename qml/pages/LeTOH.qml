@@ -52,9 +52,9 @@ Page
         {
             recorder.stopRecord()
             audioMode.checked = false
-            animateEnable.checked = false
-            breathe.stop()
-            rainbowFade.stop()
+            //animateEnable.checked = false
+            //breathe.stop()
+            //rainbowFade.stop()
         }
     }
 
@@ -339,8 +339,8 @@ Page
         Timer
         {
             id: animateTimer
-            interval: (animateSpeed.maximumValue+animateSpeed.minimumValue)-animateSpeed.value
-            running: animateEnable.checked && applicationActive  && page.status === PageStatus.Active
+            interval: (animateMode.currentIndex != 0) ? 20 : (animateSpeed.maximumValue+animateSpeed.minimumValue)-animateSpeed.value
+            running: animateEnable.checked //&& applicationActive  && page.status === PageStatus.Active
             repeat: true
             onTriggered:
             {
@@ -478,7 +478,7 @@ Page
             height: parent.width/2
             x: parent.width/4
             y: (width/2)-(height/2)
-            property color ledColor: "red"
+            property color ledColor: "black"
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "black" }
                 GradientStop { position: 0.5; color: topleft.ledColor }
@@ -507,7 +507,7 @@ Page
             x: 3*(parent.width/4)
             y: (width/2)-(height/2)
 
-            property color ledColor: "red"
+            property color ledColor: "black"
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "black" }
                 GradientStop { position: 0.5; color: topright.ledColor }
@@ -535,7 +535,7 @@ Page
             height: parent.width/2
             x: parent.width/4
             y: parent.height-(width/2)-(height/2)
-            property color ledColor: "red"
+            property color ledColor: "black"
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "black" }
                 GradientStop { position: 0.5; color: bottomleft.ledColor }
@@ -563,7 +563,7 @@ Page
             height: parent.width/2
             x: 3*(parent.width/4)
             y: parent.height-(width/2)-(height/2)
-            property color ledColor: "red"
+            property color ledColor: "black"
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "black" }
                 GradientStop { position: 0.5; color: bottomright.ledColor }
@@ -590,7 +590,7 @@ Page
             height: parent.height/3
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            property color ledColor: "red"
+            property color ledColor: "black"
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "black" }
                 GradientStop { position: 0.5; color: middleleft.ledColor }
@@ -617,7 +617,7 @@ Page
             height: parent.height/3
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
-            property color ledColor: "red"
+            property color ledColor: "black"
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "black" }
                 GradientStop { position: 0.5; color: middleright.ledColor }
@@ -646,7 +646,7 @@ Page
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: -(parent.height/3)
-            property color ledColor: "red"
+            property color ledColor: "black"
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "black" }
                 GradientStop { position: 0.5; color: upperleft.ledColor }
@@ -674,7 +674,7 @@ Page
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: -(parent.height/3)
-            property color ledColor: "red"
+            property color ledColor: "black"
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "black" }
                 GradientStop { position: 0.5; color: upperright.ledColor }
@@ -702,7 +702,7 @@ Page
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: (parent.height/3)
-            property color ledColor: "red"
+            property color ledColor: "black"
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "black" }
                 GradientStop { position: 0.5; color: lowerleft.ledColor }
@@ -730,7 +730,7 @@ Page
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             anchors.verticalCenterOffset: (parent.height/3)
-            property color ledColor: "red"
+            property color ledColor: "black"
 
             gradient: Gradient {
                 GradientStop { position: 0.0; color: "black" }
