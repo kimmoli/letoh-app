@@ -76,6 +76,7 @@ QMultimediaAudioRecorder::~QMultimediaAudioRecorder()
 
 void QMultimediaAudioRecorder::connectAudio(int index)
 {
+    Q_UNUSED(index);
 }
 
 void QMultimediaAudioRecorder::disconnectAudio()
