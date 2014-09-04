@@ -20,9 +20,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 #define SHUTUP
 
-//#define TOHKBD_DEMO
-
-
 LetohClass::LetohClass(QObject *parent) :
     QObject(parent)
 {
@@ -49,18 +46,6 @@ LetohClass::LetohClass(QObject *parent) :
 
     /* Assign I2C address, PCA9685 ports and default colors */
 
-#ifdef TOHKBD_DEMO
-    driver["address"] = 0x40; driver["red"] = 7; driver["green"] = 6; driver["blue"] = 8; driver["color"] = QColor("#000000");
-    ledDrivers["topright"] = QVariant(driver);
-    driver["address"] = 0x40; driver["red"] = 10; driver["green"] = 9; driver["blue"] = 11; driver["color"] = QColor("#000000");
-    ledDrivers["upperright"] = QVariant(driver);
-    driver["address"] = 0x40; driver["red"] = 4; driver["green"] = 3; driver["blue"] = 5; driver["color"] = QColor("#000000");
-    ledDrivers["middleright"] = QVariant(driver);
-    driver["address"] = 0x40; driver["red"] = 1; driver["green"] = 0; driver["blue"] = 2; driver["color"] = QColor("#000000");
-    ledDrivers["lowerright"] = QVariant(driver);
-    driver["address"] = 0x40; driver["red"] = 13; driver["green"] = 12; driver["blue"] = 14; driver["color"] = QColor("#000000");
-    ledDrivers["bottomright"] = QVariant(driver);
-#else
     driver["address"] = 0x40; driver["red"] = 1; driver["green"] = 0; driver["blue"] = 2; driver["color"] = QColor("#ff0000");
     ledDrivers["topright"] = QVariant(driver);
     driver["address"] = 0x40; driver["red"] = 4; driver["green"] = 3; driver["blue"] = 5; driver["color"] = QColor("#000000");
@@ -71,7 +56,7 @@ LetohClass::LetohClass(QObject *parent) :
     ledDrivers["lowerright"] = QVariant(driver);
     driver["address"] = 0x40; driver["red"] = 13; driver["green"] = 12; driver["blue"] = 14; driver["color"] = QColor("#000000");
     ledDrivers["bottomright"] = QVariant(driver);
-#endif
+
     driver["address"] = 0x41; driver["red"] = 1; driver["green"] = 0; driver["blue"] = 2; driver["color"] = QColor("#000000");
     ledDrivers["bottomleft"] = QVariant(driver);
     driver["address"] = 0x41; driver["red"] = 4; driver["green"] = 3; driver["blue"] = 5; driver["color"] = QColor("#000000");
@@ -92,11 +77,8 @@ LetohClass::LetohClass(QObject *parent) :
 
     QThread::msleep(100);
 
-    ledDriver0 = new PCA9685(0x40);
-#ifndef TOHKBD_DEMO
     ledDriver1 = new PCA9685(0x41);
-#endif
-
+    ledDriver0 = new PCA9685(0x40); /* Init driver with stepup converter control last */
 }
 
 LetohClass::~LetohClass()
@@ -164,9 +146,7 @@ void LetohClass::setLedColors(QVariantMap colorMap)
     }
 
     ledDriver0->updateLeds(data,0,60);
-#ifndef TOHKBD_DEMO
     ledDriver1->updateLeds(data,60,60);
-#endif
 }
 
 

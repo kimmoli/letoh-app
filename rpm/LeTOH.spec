@@ -13,7 +13,7 @@ Name:       LeTOH
 %{?qtc_builddir:%define _builddir %qtc_builddir}
 Summary:    LeTOH Control Application
 Version:    0.7
-Release:    1
+Release:    2
 Group:      Qt/Qt
 License:    LICENSE
 URL:        http://example.org/
