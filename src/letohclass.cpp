@@ -46,7 +46,7 @@ LetohClass::LetohClass(QObject *parent) :
 
     /* Assign I2C address, PCA9685 ports and default colors */
 
-    driver["address"] = 0x40; driver["red"] = 1; driver["green"] = 0; driver["blue"] = 2; driver["color"] = QColor("#ff0000");
+    driver["address"] = 0x40; driver["red"] = 1; driver["green"] = 0; driver["blue"] = 2; driver["color"] = QColor("#000000");
     ledDrivers["topright"] = QVariant(driver);
     driver["address"] = 0x40; driver["red"] = 4; driver["green"] = 3; driver["blue"] = 5; driver["color"] = QColor("#000000");
     ledDrivers["upperright"] = QVariant(driver);
@@ -65,7 +65,7 @@ LetohClass::LetohClass(QObject *parent) :
     ledDrivers["middleleft"] = QVariant(driver);
     driver["address"] = 0x41; driver["red"] = 10; driver["green"] = 9; driver["blue"] = 11; driver["color"] = QColor("#000000");
     ledDrivers["upperleft"] = QVariant(driver);
-    driver["address"] = 0x41; driver["red"] = 13; driver["green"] = 12; driver["blue"] = 14; driver["color"] = QColor("#00ff00");
+    driver["address"] = 0x41; driver["red"] = 13; driver["green"] = 12; driver["blue"] = 14; driver["color"] = QColor("#000000");
     ledDrivers["topleft"] = QVariant(driver);
 
     for(QVariantMap::const_iterator iter = ledDrivers.begin(); iter != ledDrivers.end(); ++iter)
