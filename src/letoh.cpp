@@ -31,9 +31,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 int main(int argc, char *argv[])
 {
 
-    qmlRegisterType<LetohClass>("LeTOH.LetohClass", 1, 0, "LetohClass");
-    qmlRegisterType<QMultimediaAudioRecorder>("LeTOH.LetohClass", 1, 0, "QMultimediaAudioRecorder");
-    qmlRegisterType<QMultimediaVuMeterBackend>("LeTOH.LetohClass", 1, 0, "QMultimediaVuMeterBackend");
+    qmlRegisterType<LetohClass>("harbour.letoh", 1, 0, "LetohClass");
+    qmlRegisterType<QMultimediaAudioRecorder>("harbour.letoh", 1, 0, "QMultimediaAudioRecorder");
+    qmlRegisterType<QMultimediaVuMeterBackend>("harbour.letoh", 1, 0, "QMultimediaVuMeterBackend");
 
 
     QScopedPointer<QGuiApplication> app(SailfishApp::application(argc, argv));
